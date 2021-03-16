@@ -192,18 +192,28 @@ def get_display_condtion(view_name,logichard = False):
                     except Exception as e:
                         print(e)
                 df = df.drop(['G3E_SNO','G3E_USERNAME','G3E_EDITDATE'], axis = 1)
-            df = df.dropna(how='all',axis=1)
+            
             
             data = df.to_dict(orient = 'list')
             styles.update({styleid:data})
-
-
     #print(styles)
 
     # convert back to dataframe for printing to csv
     df1 = pd.DataFrame.from_dict({(i): styles[i]
                                     for i in styles.keys()},
                                     orient = 'index')
+
+    # drop empty column in df1
+    for column in df1:
+        isNone = True
+        for item in df1[column]:
+            if not (item == [None] or type(item) == float):
+                isNone = False
+                break
+        if isNone:
+            df1 = df1.drop([column], axis = 1)
+
+
     df2 = pd.DataFrame.from_dict({(i): logics[i]
                                     for i in logics.keys()},
                                     orient = 'index')
