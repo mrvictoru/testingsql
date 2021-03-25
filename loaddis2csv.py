@@ -260,7 +260,17 @@ cursor = connection.cursor()
 sql = "SELECT VIEW_NAME from sys.all_views WHERE owner = 'GISD26WS'"
 df = pd.read_sql(sql,con=connection)
 
+
 key = input('Enter keyword for view: ')
+hard = int(input('is the logic hard(1 = True/ 0 = False): '))
+if hard == 0:
+    hardkey = False
+elif hard == 1:
+    hardkey = True
+else:
+    print("logic key error")
+    exit()
+
 count = 0
 views_name = []
 for row in df.VIEW_NAME:
@@ -271,7 +281,7 @@ print("No. of view match:" + str(count))
 
 
 for view in views_name:
-    get_display_condtion(view)
+    get_display_condtion(view,hardkey)
 
 
 # close connection
