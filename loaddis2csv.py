@@ -5,7 +5,7 @@ import re
 import pandas as pd
 import csv
 
-def get_display_condtion(view_name,logichard = False):
+def get_display_condtion(view_name,logichard = False, stroke = True):
 
     # get the feature name for the desired display condition
     feature_name = view_name[2:]
@@ -153,9 +153,9 @@ def get_display_condtion(view_name,logichard = False):
             # get 1st line style
             sqlstyle = "SELECT b.* FROM G3E_COMPOSITELINESTYLE a JOIN g3e_linestyle b on a.g3e_line1 = b.g3e_sno WHERE a.g3e_sno = '{styleid}'".format(styleid = styleid)
             df1=pd.read_sql(sqlstyle,con=connection)
-            df1 = df1.drop(df1.columns[[0,1,2,3,4,5,6,9,10,11]], axis = 1)
+            df1 = df1.drop(df1.columns[[0,3,4,5,6,10]], axis = 1)
             # get stroke pattern
-            if not df1.empty:
+            if not df1.empty and stroke == True:
                 sqlstyle = "SELECT * FROM G3E_NORMALIZEDSTROKE WHERE G3E_SPNO = {stroke}".format(stroke = df1.G3E_STROKEPATTERN[0])
                 df1s = pd.read_sql(sqlstyle,con=connection)
                 df1s = df1s.drop(['G3E_SPNO','G3E_USERNAME','G3E_EDITDATE','G3E_DASHPATTERNADJUSTMENT','G3E_MICROSTATIONSTYLENAME','G3E_UDLS'], axis = 1)
@@ -171,7 +171,7 @@ def get_display_condtion(view_name,logichard = False):
             df2=pd.read_sql(sqlstyle,con=connection)
             df2 = df2.drop(df2.columns[[0,1,2,3,4,5,6,9,10,11]], axis = 1)
             # get stroke pattern
-            if not df2.empty:
+            if not df2.empty and stroke == True:
                 sqlstyle = "SELECT * FROM G3E_NORMALIZEDSTROKE WHERE G3E_SPNO = {stroke}".format(stroke = df2.G3E_STROKEPATTERN[0])
                 df2s = pd.read_sql(sqlstyle,con=connection)
                 df2s = df2s.drop(['G3E_SPNO','G3E_USERNAME','G3E_EDITDATE','G3E_DASHPATTERNADJUSTMENT','G3E_MICROSTATIONSTYLENAME','G3E_UDLS'], axis = 1)
@@ -268,7 +268,15 @@ if hard == 0:
 elif hard == 1:
     hardkey = True
 else:
-    print("logic key error")
+    print("logic input error")
+    exit()
+strokekey = int(input('want to include stroke?(1 = True/ 0 = False): '))
+if strokekey == 0:
+    stroke = False
+elif strokekey == 1:
+    stroke = True
+else:
+    print("stroke input error")
     exit()
 
 count = 0
@@ -281,7 +289,7 @@ print("No. of view match:" + str(count))
 
 
 for view in views_name:
-    get_display_condtion(view,hardkey)
+    get_display_condtion(view,hardkey,stroke)
 
 
 # close connection
