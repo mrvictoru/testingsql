@@ -183,6 +183,7 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
 
             # combine table
             df = pd.concat([df1,df2], axis = 1)
+            df = df.drop(['G3E_COLOR','G3E_EDITDATE'], axis = 1)
             # rename column that has the same name
             cols = pd.Series(df.columns)            
             for dup in df.columns[df.columns.duplicated(keep=False)]:
@@ -216,7 +217,6 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
     df1 = pd.DataFrame.from_dict({(i): styles[i]
                                     for i in styles.keys()},
                                     orient = 'index')
-
     # drop empty column in df1
     for column in df1:
         isNone = True
