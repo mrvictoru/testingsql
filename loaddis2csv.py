@@ -1,6 +1,6 @@
-
+from connection import connect
 import config
-import cx_Oracle
+#import cx_Oracle
 import re
 import pandas as pd
 import csv
@@ -140,7 +140,7 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
             df=pd.read_sql(sqlstyle,con=connection)
             df = df.drop(['G3E_COLOR','G3E_SNO','G3E_USERNAME','G3E_EDITDATE'], axis = 1)
             # get white print color
-            sqlcolor = "SELECT G3E_SMNO FROM G3E_STYLEMAPPING WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = 301".format(styleid = styleid)
+            sqlcolor = "SELECT G3E_SNO FROM G3E_STYLEMAPPING WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = 301".format(styleid = styleid)
             dfcolor = pd.read_sql(sqlcolor,con=connection)
             df = pd.concat([dfcolor,df], axis = 1)
             df = df.dropna(how='all',axis=1)
@@ -161,7 +161,7 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
                 df1s = df1s.drop(['G3E_SPNO','G3E_USERNAME','G3E_EDITDATE','G3E_DASHPATTERNADJUSTMENT','G3E_MICROSTATIONSTYLENAME','G3E_UDLS'], axis = 1)
                 df1 = pd.concat([df1,df1s], axis = 1)
             # get white print color
-            sqlcolor = "SELECT G3E_SMNO FROM G3E_STYLEMAPPING WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = 301".format(styleid = styleid)
+            sqlcolor = "SELECT G3E_SNO FROM G3E_STYLEMAPPING WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = 301".format(styleid = styleid)
             dfcolor = pd.read_sql(sqlcolor,con=connection)
             df1 = pd.concat([dfcolor,df1], axis = 1)
             
@@ -177,7 +177,7 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
                 df2s = df2s.drop(['G3E_SPNO','G3E_USERNAME','G3E_EDITDATE','G3E_DASHPATTERNADJUSTMENT','G3E_MICROSTATIONSTYLENAME','G3E_UDLS'], axis = 1)
                 df2 = pd.concat([df2,df2s], axis = 1)
             # get white print color
-            sqlcolor = "SELECT G3E_SMNO FROM G3E_STYLEMAPPING WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = 301".format(styleid = styleid)
+            sqlcolor = "SELECT G3E_SNO FROM G3E_STYLEMAPPING WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = 301".format(styleid = styleid)
             dfcolor = pd.read_sql(sqlcolor,con=connection)
             df2 = pd.concat([dfcolor,df2], axis = 1)
 
@@ -205,7 +205,7 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
                         print(e)
                 df = df.drop(['G3E_COLOR','G3E_SNO','G3E_USERNAME','G3E_EDITDATE'], axis = 1)
                 # get white print color
-                sqlcolor = "SELECT G3E_SMNO FROM G3E_STYLEMAPPING WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = 301".format(styleid = styleid)
+                sqlcolor = "SELECT G3E_SNO FROM G3E_STYLEMAPPING WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = 301".format(styleid = styleid)
                 dfcolor = pd.read_sql(sqlcolor,con=connection)
                 df = pd.concat([dfcolor,df], axis = 1)
             
@@ -242,22 +242,11 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
 
 
 # connect to Oracle DB
-connection = None
-try:
-    connection = cx_Oracle.connect(
-        config.username,
-        config.password,
-        config.dsn,
-        encoding = "UTF-8"
-    )
-    print("Connected")
-    print(connection.version)
-except cx_Oracle.Error as error:
-    print(error)
+connection = connect()
 
 cursor = connection.cursor()
 
-sql = "SELECT VIEW_NAME from sys.all_views WHERE owner = 'GISD26WS'"
+sql = "SELECT VIEW_NAME from sys.all_views WHERE owner = '{owner}'".format(owner = config.username)
 df = pd.read_sql(sql,con=connection)
 
 
