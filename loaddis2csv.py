@@ -37,8 +37,8 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
     cursor.execute(sql)
     fetch = cursor.fetchall()
     txts = fetch[0][0]
-    txts = txts.rpartition("CASE")[2]
-    txts = txts.rpartition("END")[0]
+    txts = txts.rpartition("SELECT CASE")[2]
+    txts = txts.split("END", 1)[0]
     txts = re.sub(pattern,'',txts)
     default = txts.rpartition("ELSE")[2]
     txts = txts.rpartition("ELSE")[0]
