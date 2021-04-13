@@ -173,7 +173,7 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
             # get white print color
             try:
                 df1 = df1.drop(['G3E_COLOR'], axis = 1)
-                sqlcolor = "SELECT b.G3E_COLOR, mod(b.g3e_color,256) r, mod(trunc(b.g3e_color/256),256) g, trunc(b.g3e_color/256/256) b  FROM G3E_STYLEMAPPING a, {styletable} b WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = 301 and a.g3e_sno = b.g3e_sno".format(styletable = styletable, styleid = df1.G3E_SNO)
+                sqlcolor = "SELECT b.G3E_COLOR, mod(b.g3e_color,256) r, mod(trunc(b.g3e_color/256),256) g, trunc(b.g3e_color/256/256) b  FROM G3E_STYLEMAPPING a, {styletable} b WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = 301 and a.g3e_sno = b.g3e_sno".format(styletable = 'G3E_LINESTYLE', styleid = df1.G3E_SNO[0])
                 dfcolor = pd.read_sql(sqlcolor,con=connection)
                 df1 = pd.concat([dfcolor,df1], axis = 1)
                 df1 = df1.drop(['G3E_SNO'], axis = 1)
@@ -195,7 +195,7 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
             # get white print color
             try:
                 df2 = df2.drop(['G3E_COLOR'], axis = 1)
-                sqlcolor = "SELECT b.G3E_COLOR, mod(b.g3e_color,256) r, mod(trunc(b.g3e_color/256),256) g, trunc(b.g3e_color/256/256) b  FROM G3E_STYLEMAPPING a, {styletable} b WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = 301 and a.g3e_sno = b.g3e_sno".format(styletable = styletable, styleid = df2.G3E_SNO)
+                sqlcolor = "SELECT b.G3E_COLOR, mod(b.g3e_color,256) r, mod(trunc(b.g3e_color/256),256) g, trunc(b.g3e_color/256/256) b  FROM G3E_STYLEMAPPING a, {styletable} b WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = 301 and a.g3e_sno = b.g3e_sno".format(styletable = 'G3E_LINESTYLE', styleid = df2.G3E_SNO[0])
                 dfcolor = pd.read_sql(sqlcolor,con=connection)
                 df2 = pd.concat([dfcolor,df2], axis = 1)
                 df2 = df2.drop(['G3E_SNO'], axis = 1)
@@ -224,7 +224,7 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
                 # get white print color
                 try:
                     df = df.drop(['G3E_COLOR'], axis = 1)
-                    sqlcolor = "SELECT b.G3E_COLOR, mod(b.g3e_color,256) r, mod(trunc(b.g3e_color/256),256) g, trunc(b.g3e_color/256/256) b  FROM G3E_STYLEMAPPING a, {styletable} b WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = 301 and a.g3e_sno = b.g3e_sno".format(styletable = styletable, styleid = df.G3E_SNO)
+                    sqlcolor = "SELECT b.G3E_COLOR, mod(b.g3e_color,256) r, mod(trunc(b.g3e_color/256),256) g, trunc(b.g3e_color/256/256) b  FROM G3E_STYLEMAPPING a, {styletable} b WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = 301 and a.g3e_sno = b.g3e_sno".format(styletable = 'G3E_LINESTYLE', styleid = df.G3E_SNO[0])
                     dfcolor = pd.read_sql(sqlcolor,con=connection)
                     df = pd.concat([dfcolor,df], axis = 1)
                     df = df.drop(['G3E_SNO'], axis = 1)
