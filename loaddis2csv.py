@@ -12,8 +12,12 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
     print(feature_name)
     sql = "Select g3e_geometrytype from G3E_COMPONENT where G3E_NAME = '{name}'".format(name = feature_name)
     cursor.execute(sql)
-    geometrytype = cursor.fetchall()[0][0]
-    print(geometrytype)
+    try:
+        geometrytype = cursor.fetchall()[0][0]
+        print(geometrytype)
+    except Exception as e:
+        print(e)
+        return
 
 
     # hardcode condition to know which styletable for the given style view
@@ -37,9 +41,9 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
     cursor.execute(sql)
     fetch = cursor.fetchall()
     txts = fetch[0][0]
-    txts = txts.rpartition("SELECT CASE")[2]
-    txts = txts.split("END", 1)[0]
     txts = re.sub(pattern,'',txts)
+    txts = txts.rpartition("SELECTCASE")[2]
+    txts = txts.split("END", 1)[0]
     default = txts.rpartition("ELSE")[2]
     txts = txts.rpartition("ELSE")[0]
     txts = txts.split("WHEN")
@@ -132,6 +136,7 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
 
 
    # get the relevant information for the given style id
+
     styles = {}
     # check if compositeline, as there is a seperate method of getting style info
     if styletable != 'G3E_COMPOSITELINESTYLE':
@@ -153,7 +158,7 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
             # get 1st line style
             sqlstyle = "SELECT b.* FROM G3E_COMPOSITELINESTYLE a JOIN g3e_linestyle b on a.g3e_line1 = b.g3e_sno WHERE a.g3e_sno = '{styleid}'".format(styleid = styleid)
             df1=pd.read_sql(sqlstyle,con=connection)
-            df1 = df1.drop(df1.columns[[0,3,4,5,6,9,10,11]], axis = 1)
+            df1 = df1.drop(df1.columns[[0,1,3,4,5,6,9,10,11]], axis = 1)
             # get stroke pattern
             if not df1.empty and stroke:
                 sqlstyle = "SELECT * FROM G3E_NORMALIZEDSTROKE WHERE G3E_SPNO = {stroke}".format(stroke = df1.G3E_STROKEPATTERN[0])
@@ -194,7 +199,7 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
                 sqlstyle = "SELECT * FROM G3E_LINESTYLE WHERE g3e_sno = '{styleid}'".format(table = styletable, styleid = styleid)
                 df = pd.read_sql(sqlstyle,con=connection)
                 # get stroke pattern
-                if df.G3E_STROKEPATTERN[0] is not None:
+                if df.G3E_STROKEPATTERN[0] is not None and stroke:
                     sqlstyle = "SELECT * FROM G3E_NORMALIZEDSTROKE WHERE G3E_SPNO = {stroke}".format(stroke = df.G3E_STROKEPATTERN[0])
                     dfs = pd.read_sql(sqlstyle,con=connection)
                     dfs = dfs.drop(['G3E_SPNO','G3E_USERNAME','G3E_EDITDATE','G3E_DASHPATTERNADJUSTMENT','G3E_MICROSTATIONSTYLENAME','G3E_UDLS'], axis = 1)
