@@ -145,9 +145,13 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
             df=pd.read_sql(sqlstyle,con=connection)
             df = df.drop(['G3E_SNO','G3E_USERNAME','G3E_EDITDATE'], axis = 1)
             # get white print color
-            #sqlcolor = "SELECT G3E_SNO FROM G3E_STYLEMAPPING WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = ".format(styleid = styleid)
-            #dfcolor = pd.read_sql(sqlcolor,con=connection)
-            #df = pd.concat([dfcolor,df], axis = 1)
+            try:
+                df = df.drop(['G3E_COLOR'], axis = 1)
+                sqlcolor = "SELECT b.G3E_COLOR, mod(b.g3e_color,256) r, mod(trunc(b.g3e_color/256),256) g, trunc(b.g3e_color/256/256) b  FROM G3E_STYLEMAPPING a, {styletable} b WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = 301 and a.g3e_sno = b.g3e_sno".format(styletable = styletable, styleid = styleid)
+                dfcolor = pd.read_sql(sqlcolor,con=connection)
+                df = pd.concat([dfcolor,df], axis = 1)
+            except Exception as e:
+                print(e)
             df = df.dropna(how='all',axis=1)
             data = df.to_dict(orient = 'list')
             styles.update({styleid:data})
@@ -158,6 +162,7 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
             # get 1st line style
             sqlstyle = "SELECT b.* FROM G3E_COMPOSITELINESTYLE a JOIN g3e_linestyle b on a.g3e_line1 = b.g3e_sno WHERE a.g3e_sno = '{styleid}'".format(styleid = styleid)
             df1=pd.read_sql(sqlstyle,con=connection)
+            
             df1 = df1.drop(df1.columns[[0,1,3,4,5,6,9,10,11]], axis = 1)
             # get stroke pattern
             if not df1.empty and stroke:
@@ -166,14 +171,19 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
                 df1s = df1s.drop(['G3E_SPNO','G3E_USERNAME','G3E_EDITDATE','G3E_DASHPATTERNADJUSTMENT','G3E_MICROSTATIONSTYLENAME','G3E_UDLS'], axis = 1)
                 df1 = pd.concat([df1,df1s], axis = 1)
             # get white print color
-            #sqlcolor = "SELECT G3E_SNO FROM G3E_STYLEMAPPING WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = ".format(styleid = styleid)
-            #dfcolor = pd.read_sql(sqlcolor,con=connection)
-            #df1 = pd.concat([dfcolor,df1], axis = 1)
+            try:
+                df1 = df1.drop(['G3E_COLOR'], axis = 1)
+                sqlcolor = "SELECT b.G3E_COLOR, mod(b.g3e_color,256) r, mod(trunc(b.g3e_color/256),256) g, trunc(b.g3e_color/256/256) b  FROM G3E_STYLEMAPPING a, {styletable} b WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = 301 and a.g3e_sno = b.g3e_sno".format(styletable = styletable, styleid = styleid)
+                dfcolor = pd.read_sql(sqlcolor,con=connection)
+                df1 = pd.concat([dfcolor,df1], axis = 1)
+            except Exception as e:
+                print(e)
             
 
             # get 2nd line style
             sqlstyle = "SELECT c.* FROM G3E_COMPOSITELINESTYLE a JOIN g3e_linestyle c on a.g3e_line2 = c.g3e_sno WHERE a.g3e_sno = '{styleid}'".format(styleid = styleid)
             df2=pd.read_sql(sqlstyle,con=connection)
+            
             df2 = df2.drop(df2.columns[[0,1,3,4,5,6,9,10,11]], axis = 1)
             # get stroke pattern
             if not df2.empty and stroke:
@@ -182,9 +192,13 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
                 df2s = df2s.drop(['G3E_SPNO','G3E_USERNAME','G3E_EDITDATE','G3E_DASHPATTERNADJUSTMENT','G3E_MICROSTATIONSTYLENAME','G3E_UDLS'], axis = 1)
                 df2 = pd.concat([df2,df2s], axis = 1)
             # get white print color
-            #sqlcolor = "SELECT G3E_SNO FROM G3E_STYLEMAPPING WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = ".format(styleid = styleid)
-            #dfcolor = pd.read_sql(sqlcolor,con=connection)
-            #df2 = pd.concat([dfcolor,df2], axis = 1)
+            try:
+                df2 = df2.drop(['G3E_COLOR'], axis = 1)
+                sqlcolor = "SELECT b.G3E_COLOR, mod(b.g3e_color,256) r, mod(trunc(b.g3e_color/256),256) g, trunc(b.g3e_color/256/256) b  FROM G3E_STYLEMAPPING a, {styletable} b WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = 301 and a.g3e_sno = b.g3e_sno".format(styletable = styletable, styleid = styleid)
+                dfcolor = pd.read_sql(sqlcolor,con=connection)
+                df2 = pd.concat([dfcolor,df2], axis = 1)
+            except Exception as e:
+                print(e)
 
             # combine table
             df = pd.concat([df1,df2], axis = 1)
@@ -206,9 +220,13 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
                     df = pd.concat([df,dfs], axis = 1)
                 df = df.drop(['G3E_SNO','G3E_USERNAME','G3E_EDITDATE'], axis = 1)
                 # get white print color
-                #sqlcolor = "SELECT G3E_SNO FROM G3E_STYLEMAPPING WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = ".format(styleid = styleid)
-                #dfcolor = pd.read_sql(sqlcolor,con=connection)
-                #df = pd.concat([dfcolor,df], axis = 1)
+                try:
+                    df = df.drop(['G3E_COLOR'], axis = 1)
+                    sqlcolor = "SELECT b.G3E_COLOR, mod(b.g3e_color,256) r, mod(trunc(b.g3e_color/256),256) g, trunc(b.g3e_color/256/256) b  FROM G3E_STYLEMAPPING a, {styletable} b WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = 301 and a.g3e_sno = b.g3e_sno".format(styletable = styletable, styleid = styleid)
+                    dfcolor = pd.read_sql(sqlcolor,con=connection)
+                    df = pd.concat([dfcolor,df], axis = 1)
+                except Exception as e:
+                    print(e)
             
             data = df.to_dict(orient = 'list')
             styles.update({styleid:data})
