@@ -144,10 +144,18 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
             sqlstyle = "SELECT * FROM {table} WHERE g3e_sno = '{styleid}'".format(table = styletable, styleid = styleid)
             df=pd.read_sql(sqlstyle,con=connection)
             df = df.drop(['G3E_SNO','G3E_USERNAME','G3E_EDITDATE'], axis = 1)
+            # get linestyle for boundary
+            if styletable == 'G3E_AREASTYLE':
+                sqlstyle = "SELECT * FROM G3E_LINESTYLE where g3e_sno = {sno}".format(sno = df.G3E_BOUNDARY[0])
+                df1 = pd.read_sql(sqlstyle, con=connection)
+                df1 = df1.drop(['G3E_SNO','G3E_USERNAME','G3E_EDITDATE'], axis = 1)
+                df = pd.concat([df,df1], axis = 1)
+                colorid = df.G3E_BOUNDARY[0]
             # get white print color
+            colorid = styleid
             try:
                 df = df.drop(['G3E_COLOR'], axis = 1)
-                sqlcolor = "SELECT b.G3E_COLOR, mod(b.g3e_color,256) r, mod(trunc(b.g3e_color/256),256) g, trunc(b.g3e_color/256/256) b  FROM G3E_STYLEMAPPING a, {styletable} b WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = 301 and a.g3e_sno = b.g3e_sno".format(styletable = styletable, styleid = styleid)
+                sqlcolor = "SELECT b.G3E_COLOR, mod(b.g3e_color,256) r, mod(trunc(b.g3e_color/256),256) g, trunc(b.g3e_color/256/256) b  FROM G3E_STYLEMAPPING a, {styletable} b WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = 301 and a.g3e_sno = b.g3e_sno".format(styletable = styletable, styleid = colorid)
                 dfcolor = pd.read_sql(sqlcolor,con=connection)
                 df = pd.concat([dfcolor,df], axis = 1)
             except Exception as e:
