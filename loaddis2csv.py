@@ -308,7 +308,12 @@ print("No. of view match:" + str(count))
 
 
 for view in views_name:
-    get_display_condtion(view,hardkey,stroke)
+    try:
+        get_display_condtion(view,hardkey,stroke)
+        print("\n--next feature--\n")
+    except Exception as e:
+        print(e)
+        print("\n--next feature--\n")
 
 
 # close connection
