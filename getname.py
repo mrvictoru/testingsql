@@ -3,6 +3,7 @@
 from connection import connection
 import pandas as pd
 import csv
+import config
 
 conn = connection(config)
 conn.connect()
