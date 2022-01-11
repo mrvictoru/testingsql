@@ -1,10 +1,10 @@
 import config
 #import cx_Oracle
-from connection import connect
+from connection import connection
 import pandas as pd
 
-conn = connect()
-cursor = conn.cursor()
+conn = connection(config)
+conn.connect()
 
 polygon_count = 0
 polyline_count = 0
@@ -13,7 +13,7 @@ compline_count = 0
 text_count = 0
 
 sql = "SELECT VIEW_NAME from sys.all_views WHERE owner = '{owner}' and VIEW_NAME like 'V_%'".format(owner = config.username)
-vname = pd.read_sql(sql,con=conn)
+vname = pd.read_sql(sql,con=conn.connecting)
 
 views_name = []
 for row in vname.VIEW_NAME:
@@ -26,8 +26,8 @@ for name in views_name:
         styleids = pd.read_sql(sql,con=conn)
         for id in styleids.G3E_STYLEID:
             sql = "SELECT G3E_TYPE FROM G3E_STYLE WHERE G3E_SNO = {id}".format(id = id)
-            cursor.execute(sql)
-            g3etype = cursor.fetchall()
+            conn.cursor.execute(sql)
+            g3etype = conn.cursor.fetchall()
 
             if g3etype[0][0] == "PointStyle":
                 point_count += 1
@@ -47,3 +47,5 @@ print(polyline_count)
 print(point_count)
 print(compline_count)
 print(text_count)
+
+conn.close()

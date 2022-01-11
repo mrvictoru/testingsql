@@ -1,19 +1,19 @@
-from connection import connect
+from connection import connection
 import config
 #import cx_Oracle
 import re
 import pandas as pd
 import csv
 
-def get_display_condtion(view_name,logichard = False, stroke = True):
+def get_display_condtion(view_name,logichard = False, stroke = True, conn = None):
 
     # get the feature name for the desired display condition
     feature_name = view_name[2:]
     print(feature_name)
     sql = "Select g3e_geometrytype from G3E_COMPONENT where G3E_NAME = '{name}'".format(name = feature_name)
-    cursor.execute(sql)
+    conn.cursor.execute(sql)
     try:
-        geometrytype = cursor.fetchall()[0][0]
+        geometrytype = conn.cursor.fetchall()[0][0]
         print(geometrytype)
     except Exception as e:
         print(e)
@@ -38,8 +38,8 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
     # extract text that create the given style view
     pattern = re.compile(r'\s+')
     sql = "SELECT TEXT FROM USER_VIEWS WHERE VIEW_NAME = '{view_name}'".format(view_name = view_name)
-    cursor.execute(sql)
-    fetch = cursor.fetchall()
+    conn.cursor.execute(sql)
+    fetch = conn.cursor.fetchall()
     txts = fetch[0][0]
     txts = txts.split("\nEND", 1)[0]
     txts = re.sub(pattern,'',txts)
@@ -53,7 +53,7 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
     dfid = pd.DataFrame()
     try:
         sql = "SELECT DISTINCT (g3e_styleid) FROM {view}".format(view = view_name)
-        dfid = pd.read_sql(sql,con=connection)
+        dfid = pd.read_sql(sql,con=conn.connecting)
     except Exception as e:
         print(e)
 
@@ -142,12 +142,12 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
     if styletable != 'G3E_COMPOSITELINESTYLE':
         for styleid in logics.keys():
             sqlstyle = "SELECT * FROM {table} WHERE g3e_sno = '{styleid}'".format(table = styletable, styleid = styleid)
-            df=pd.read_sql(sqlstyle,con=connection)
+            df=pd.read_sql(sqlstyle,con=conn.connecting)
             df = df.drop(['G3E_SNO','G3E_USERNAME','G3E_EDITDATE'], axis = 1)
             # get linestyle for boundary
             if styletable == 'G3E_AREASTYLE':
                 sqlstyle = "SELECT * FROM G3E_LINESTYLE where g3e_sno = {sno}".format(sno = df.G3E_BOUNDARY[0])
-                df1 = pd.read_sql(sqlstyle, con=connection)
+                df1 = pd.read_sql(sqlstyle, con=conn.connecting)
                 df1 = df1.drop(['G3E_SNO','G3E_USERNAME','G3E_EDITDATE'], axis = 1)
                 df = pd.concat([df,df1], axis = 1)
                 colorid = df.G3E_BOUNDARY[0]
@@ -156,7 +156,7 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
             try:
                 df = df.drop(['G3E_COLOR'], axis = 1)
                 sqlcolor = "SELECT b.G3E_COLOR, mod(b.g3e_color,256) r, mod(trunc(b.g3e_color/256),256) g, trunc(b.g3e_color/256/256) b  FROM G3E_STYLEMAPPING a, {styletable} b WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = 301 and a.g3e_sno = b.g3e_sno".format(styletable = styletable, styleid = colorid)
-                dfcolor = pd.read_sql(sqlcolor,con=connection)
+                dfcolor = pd.read_sql(sqlcolor,con=conn.connecting)
                 df = pd.concat([dfcolor,df], axis = 1)
             except Exception as e:
                 print(e)
@@ -169,20 +169,20 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
         for styleid in logics.keys():
             # get 1st line style
             sqlstyle = "SELECT b.* FROM G3E_COMPOSITELINESTYLE a JOIN g3e_linestyle b on a.g3e_line1 = b.g3e_sno WHERE a.g3e_sno = '{styleid}'".format(styleid = styleid)
-            df1=pd.read_sql(sqlstyle,con=connection)
+            df1=pd.read_sql(sqlstyle,con=conn.connecting)
             
             df1 = df1.drop(df1.columns[[1,3,4,5,6,9,10,11]], axis = 1)
             # get stroke pattern
             if not df1.empty and stroke:
                 sqlstyle = "SELECT * FROM G3E_NORMALIZEDSTROKE WHERE G3E_SPNO = {stroke}".format(stroke = df1.G3E_STROKEPATTERN[0])
-                df1s = pd.read_sql(sqlstyle,con=connection)
+                df1s = pd.read_sql(sqlstyle,con=conn.connecting)
                 df1s = df1s.drop(['G3E_SPNO','G3E_USERNAME','G3E_EDITDATE','G3E_DASHPATTERNADJUSTMENT','G3E_MICROSTATIONSTYLENAME','G3E_UDLS'], axis = 1)
                 df1 = pd.concat([df1,df1s], axis = 1)
             # get white print color
             try:
                 df1 = df1.drop(['G3E_COLOR'], axis = 1)
                 sqlcolor = "SELECT b.G3E_COLOR, mod(b.g3e_color,256) r, mod(trunc(b.g3e_color/256),256) g, trunc(b.g3e_color/256/256) b  FROM G3E_STYLEMAPPING a, {styletable} b WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = 301 and a.g3e_sno = b.g3e_sno".format(styletable = 'G3E_LINESTYLE', styleid = df1.G3E_SNO[0])
-                dfcolor = pd.read_sql(sqlcolor,con=connection)
+                dfcolor = pd.read_sql(sqlcolor,con=conn.connecting)
                 df1 = pd.concat([dfcolor,df1], axis = 1)
                 df1 = df1.drop(['G3E_SNO'], axis = 1)
             except Exception as e:
@@ -191,20 +191,20 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
 
             # get 2nd line style
             sqlstyle = "SELECT c.* FROM G3E_COMPOSITELINESTYLE a JOIN g3e_linestyle c on a.g3e_line2 = c.g3e_sno WHERE a.g3e_sno = '{styleid}'".format(styleid = styleid)
-            df2=pd.read_sql(sqlstyle,con=connection)
+            df2=pd.read_sql(sqlstyle,con=conn.connecting)
             
             df2 = df2.drop(df2.columns[[1,3,4,5,6,9,10,11]], axis = 1)
             # get stroke pattern
             if not df2.empty and stroke:
                 sqlstyle = "SELECT * FROM G3E_NORMALIZEDSTROKE WHERE G3E_SPNO = {stroke}".format(stroke = df2.G3E_STROKEPATTERN[0])
-                df2s = pd.read_sql(sqlstyle,con=connection)
+                df2s = pd.read_sql(sqlstyle,con=conn.connecting)
                 df2s = df2s.drop(['G3E_SPNO','G3E_USERNAME','G3E_EDITDATE','G3E_DASHPATTERNADJUSTMENT','G3E_MICROSTATIONSTYLENAME','G3E_UDLS'], axis = 1)
                 df2 = pd.concat([df2,df2s], axis = 1)
             # get white print color
             try:
                 df2 = df2.drop(['G3E_COLOR'], axis = 1)
                 sqlcolor = "SELECT b.G3E_COLOR, mod(b.g3e_color,256) r, mod(trunc(b.g3e_color/256),256) g, trunc(b.g3e_color/256/256) b  FROM G3E_STYLEMAPPING a, {styletable} b WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = 301 and a.g3e_sno = b.g3e_sno".format(styletable = 'G3E_LINESTYLE', styleid = df2.G3E_SNO[0])
-                dfcolor = pd.read_sql(sqlcolor,con=connection)
+                dfcolor = pd.read_sql(sqlcolor,con=conn.connecting)
                 df2 = pd.concat([dfcolor,df2], axis = 1)
                 df2 = df2.drop(['G3E_SNO'], axis = 1)
             except Exception as e:
@@ -221,11 +221,11 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
             # if both pattern is empty then get style from single line style table
             if df.empty:
                 sqlstyle = "SELECT * FROM G3E_LINESTYLE WHERE g3e_sno = '{styleid}'".format(table = styletable, styleid = styleid)
-                df = pd.read_sql(sqlstyle,con=connection)
+                df = pd.read_sql(sqlstyle,con=conn.connecting)
                 # get stroke pattern
                 if df.G3E_STROKEPATTERN[0] is not None and stroke:
                     sqlstyle = "SELECT * FROM G3E_NORMALIZEDSTROKE WHERE G3E_SPNO = {stroke}".format(stroke = df.G3E_STROKEPATTERN[0])
-                    dfs = pd.read_sql(sqlstyle,con=connection)
+                    dfs = pd.read_sql(sqlstyle,con=conn.connecting)
                     dfs = dfs.drop(['G3E_SPNO','G3E_USERNAME','G3E_EDITDATE','G3E_DASHPATTERNADJUSTMENT','G3E_MICROSTATIONSTYLENAME','G3E_UDLS'], axis = 1)
                     df = pd.concat([df,dfs], axis = 1)
                 df = df.drop(['G3E_USERNAME','G3E_EDITDATE'], axis = 1)
@@ -233,7 +233,7 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
                 try:
                     df = df.drop(['G3E_COLOR'], axis = 1)
                     sqlcolor = "SELECT b.G3E_COLOR, mod(b.g3e_color,256) r, mod(trunc(b.g3e_color/256),256) g, trunc(b.g3e_color/256/256) b  FROM G3E_STYLEMAPPING a, {styletable} b WHERE G3E_LEGENDSNO = {styleid} and g3e_stno = 301 and a.g3e_sno = b.g3e_sno".format(styletable = 'G3E_LINESTYLE', styleid = df.G3E_SNO[0])
-                    dfcolor = pd.read_sql(sqlcolor,con=connection)
+                    dfcolor = pd.read_sql(sqlcolor,con=conn.connecting)
                     df = pd.concat([dfcolor,df], axis = 1)
                     df = df.drop(['G3E_SNO'], axis = 1)
                 except Exception as e:
@@ -272,12 +272,11 @@ def get_display_condtion(view_name,logichard = False, stroke = True):
 
 
 # connect to Oracle DB
-connection = connect()
-
-cursor = connection.cursor()
+conn = connection(config)
+conn.connect()
 
 sql = "SELECT VIEW_NAME from sys.all_views WHERE owner = '{owner}'".format(owner = config.username)
-df = pd.read_sql(sql,con=connection)
+df = pd.read_sql(sql,con=conn.connecting)
 
 
 key = input('Enter keyword for view: ')
@@ -309,7 +308,7 @@ print("No. of view match:" + str(count))
 
 for view in views_name:
     try:
-        get_display_condtion(view,hardkey,stroke)
+        get_display_condtion(view,hardkey,stroke,conn=conn)
         print("\n--next feature--\n")
     except Exception as e:
         print(e)
@@ -317,9 +316,6 @@ for view in views_name:
 
 
 # close connection
-if connection:
-    cursor.close()
-    connection.close()
-    print("Connection closed")
+conn.close()
 
 
