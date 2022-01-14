@@ -41,7 +41,7 @@ def get_display_condtion(view_name,logichard = False, stroke = True, conn = None
     conn.cursor.execute(sql)
     fetch = conn.cursor.fetchall()
     txts = fetch[0][0]
-    txts = txts.split("\nEND", 1)[0]
+    txts = txts.split("END", 1)[0]
     txts = re.sub(pattern,'',txts)
     txts = txts.rpartition("SELECTCASE")[2]
     default = txts.rpartition("ELSE")[2]
