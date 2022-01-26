@@ -7,15 +7,17 @@ from connection import connection
 if len(sys.argv) != 2:
     print("Usage: python createfull.py <filepath>")
     exit()
-else:
-    filepath = sys.argv[1]
 
-fullfiles = os.listdir(filepath)
+currentdir = os.getcwd()
+filepath = os.path.join(currentdir, sys.argv[1])
+
 conn = connection(config)
 conn.connect()
 if not conn.connecting:
     print("Connection failed")
     exit()
+
+fullfiles = os.listdir(filepath)
 
 # loop through the text files and create FULL views with SQL using text and filename as view name
 for fullfile in fullfiles:
@@ -23,7 +25,7 @@ for fullfile in fullfiles:
         # get the view name from the filename
         viewname = fullfile.replace('SQL.txt', '')
         # get the text from the file
-        with open(filepath + fullfile, 'r') as f:
+        with open(os.path.join(filepath, fullfile), 'r') as f:
             text = f.read()
         # create the view
         try:
